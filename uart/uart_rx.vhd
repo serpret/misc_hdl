@@ -6,10 +6,6 @@ use ieee.numeric_std.all;
 use ieee.math_real.all; -- used for log2 and ceiling functions for calculating widths
 
 entity uart_rx is
-	--generic(
-	--	NUM_CLKS_BAUD_PERIOD : positive := 868;   -- ex: 100MHz clock, 115200 BAUD: 100e6/115200 = 868 
-	--	
-	--);
 	port(
 		i_clk: in std_logic;
 		i_rst: in std_logic;
@@ -22,8 +18,6 @@ end uart_rx;
 
 
 architecture arch of uart_rx is 
-	--constant WIDTH_CNT_PERIOD: positive := integer(ceil(log2( NUM_CLKS_BAUD_PERIOD)));
-	--constant CNT_SAMPLE : positive := WIDTH_CNT_PERIOD / 2;
 	signal sample_time : unsigned( i_num_clks-1 downto 0);
 		
 	type t_state is (ST_IDLE, ST_START, ST_DATA, ST_STOP);
@@ -61,33 +55,31 @@ begin
 
 	-- FSM combinatorial logic
 	process(all) begin
+		--default else case
+		nxt_state <= state;
+
 		case( state) 
 			when ST_IDLE => 
 				if rx = '0' then
-					state <= ST_DATA;
+					nxt_state <= ST_DATA;
 				end if;
 
 			when ST_DATA =>
 				if last_bit and cnt_period_tc then
-					state <= ST_STOP;
+					nxt_state <= ST_STOP;
 				end if;
 
 			when ST_STOP
 				if cnt_period_tc then
-					state <= ST_IDLE;
+					nxt_state <= ST_IDLE;
 				end if;
 
 			when others =>			
-				state <= ST_IDLE;
+				nxt_state <= ST_IDLE;
 				
 		end case;
 
 	end process;
-
-	-- idle  start  b0   b1         b7    P    idle
-	-- _____       _____         _       _____ _____
-	--	\_____/     \__   //  \_____/
-	--     0   |  1  |  2         8  |  9  | 10
 
 
 	-- idle  start  b0   b1         b7    P    idle
@@ -95,26 +87,9 @@ begin
 	--	\_____/     \__   //  \_____/
 	-- bit:   0   |  1  | 2       |  8  |  9  
 
-	-- active logic
-	--process(i_clk) begin
-	--	if rising_edge(i_clk) then
-	--		if i_rst = '1' then
-	--			active <= False;
-	--		else
-	--			if idle and i_rx = '0' then
-	--				active <= True;	
-	--			elsif active and set_idle then
-	--				active <= False; 
-	--			end if;
-	--				
-	--		end if;
-	--				
-	--	end if;
-	--end process;
 
 	sample_time <= '0' & i_num_clks( i_num_clks'length-2 downto 1) ;
 	
-
 	-- when do we sample?
 	process(i_clk) begin
 		if rising_edge(i_clk) then
