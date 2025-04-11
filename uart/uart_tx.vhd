@@ -14,7 +14,7 @@ entity uart_tx is
 		o_rdy:out std_logic;
 		i_dat: in std_logic_vector; --data to transmit, typically 8 width, set to 9 if you want to tx parity
 
-		o_tx : in std_logic;
+		o_tx :out std_logic;
 		i_num_clks: in std_logic_vector --number of clocks, "i_clk", per baud period
 	);
 end uart_tx;
@@ -28,8 +28,11 @@ architecture arch of uart_tx is
 	signal cnt_period : unsigned( i_num_clks'length-1 downto 0);
 	signal cnt_bits : unsigned(3 downto 0);
 	signal cnt_period_tc : std_logic;
+	signal last_bit      : std_logic;  
+	signal last_bit_done : std_logic;
 
 	constant CNT_BITS_MAX: unsigned( cnt_bits'range) := to_unsigned( i_dat'length+1, cnt_bits'length);
+	constant CNT_PERIOD_ZERO: unsigned( cnt_period'range) := (others => '0');
 
 	signal sr: std_logic_vector( i_dat'range);
 begin
@@ -52,7 +55,7 @@ begin
 		-- default else case
 		nxt_state <= state;
 
-		case( state) 
+		case( state) is
 			when ST_IDLE => 
 				if i_val = '1' then
 					nxt_state <= ST_ACTIVE;
@@ -71,7 +74,7 @@ begin
 
 	-- FSM output  logic
 	process(all) begin
-		case( state) 
+		case( state) is
 			when ST_IDLE => 
 				o_rdy <= '1';
 
@@ -90,10 +93,10 @@ begin
 	process(i_clk) begin
 		if rising_edge(i_clk) then
 			if o_rdy = '1' then
-				cnt_period <= i_num_clks;
+				cnt_period <= unsigned(i_num_clks);
 			else
 				if cnt_period_tc then
-					cnt_period <= i_num_clks;
+					cnt_period <= unsigned(i_num_clks);
 				else
 					cnt_period <= cnt_period - 1;
 				end if;
@@ -101,7 +104,7 @@ begin
 		end if;
 	end process;
 
-	cnt_period_tc <= cnt_period = CNT_PERIOD_ZERO;
+	cnt_period_tc <= '1' when cnt_period = CNT_PERIOD_ZERO else '0';
 
 
 	-- idle  start  b0   b1         b7    P    idle
@@ -116,15 +119,19 @@ begin
 		if rising_edge(i_clk) then
 			if i_val = '1' and o_rdy = '1' then
 				sr <= '0' & i_dat & '1' ;
-				cnt_bit <= (others => '0');
+				cnt_bits <= (others => '0');
 				last_bit <= '0';
+				last_bit_done <= '0';
 			elsif cnt_period_tc = '1' then
 				sr <= sr( sr'length-2 downto 0) & '1';
 				--if cnt_bit = (i_dat'length+1)
-				if cnt_bit = CNT_BITS_MAX then
+				if cnt_bits = CNT_BITS_MAX then
 					last_bit <= '1';
+					if last_bit = '1' then
+						last_bit_done <= '1';
+					end if;
 				else
-					cnt_bit <= cnt_bit + 1;
+					cnt_bits <= cnt_bits + 1;
 				end if;
 			end if;
 

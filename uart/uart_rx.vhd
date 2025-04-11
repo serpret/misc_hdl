@@ -20,17 +20,23 @@ end uart_rx;
 architecture arch of uart_rx is 
 	--constant WIDTH_CNT_PERIOD : positive := positive( ceil(log2( i_num_clks'length	
 	signal sample_time : unsigned( i_num_clks'length-1 downto 0);
+	signal sample_now : std_logic;
 		
-	type t_state is (ST_IDLE, ST_START, ST_DATA, ST_STOP);
+	type t_state is (ST_IDLE,  ST_DATA, ST_STOP);
 	signal     state: t_state;	
 	signal nxt_state: t_state;	
+	signal idle: std_logic;
+	
+	signal rx2: std_logic;
+	signal rx : std_logic;
+	signal last_bit: std_logic;
 
 	signal cnt_period : unsigned( i_num_clks'length-1 downto 0);
 	constant CNT_PERIOD_ZERO : unsigned( cnt_period'range) := (others => '0');
 	signal cnt_period_tc : std_logic;
 
 	signal cnt_bits : unsigned(3 downto 0);
-	constant CNT_BITS_MAX: unsigned( cnt_bits'range) := to_unsigned( i_dat'length+1, cnt_bits'length);
+	constant CNT_BITS_MAX: unsigned( cnt_bits'range) := to_unsigned( o_dat'length+1, cnt_bits'length);
 
 	--signal sr : std_logic_vector( 8 downto 0);
 	signal sr : std_logic_vector( o_dat'length downto 0); 
@@ -62,25 +68,39 @@ begin
 		--default else case
 		nxt_state <= state;
 
-		case( state) 
+		case( state) is
 			when ST_IDLE => 
 				if rx = '0' then
 					nxt_state <= ST_DATA;
 				end if;
 
 			when ST_DATA =>
-				if last_bit and cnt_period_tc then
+				if last_bit = '1' and cnt_period_tc = '1' then
 					nxt_state <= ST_STOP;
 				end if;
 
-			when ST_STOP
-				if cnt_period_tc then
+			when ST_STOP =>
+				if cnt_period_tc = '1' then
 					nxt_state <= ST_IDLE;
 				end if;
 
 			when others =>			
 				nxt_state <= ST_IDLE;
 				
+		end case;
+
+	end process;
+
+	--FSM outputs
+	process(all) begin
+		case( state) is
+			when ST_IDLE =>
+				idle <= '1';
+
+			--when ST_DATA => 
+			--when ST_STOP =>
+			when others =>
+				idle <= '0';
 		end case;
 
 	end process;
@@ -92,9 +112,9 @@ begin
 	-- bit:   0   |  1  | 2       |  8  |  9  
 
 
-	sample_time <= '0' & i_num_clks( i_num_clks'length-2 downto 1) ;
+	sample_time <= unsigned( '0' & i_num_clks( i_num_clks'length-2 downto 1) ) ;
 		
-	cnt_period_tc <= cnt_period = CNT_PERIOD_ZERO;
+	cnt_period_tc <= '1' when cnt_period = CNT_PERIOD_ZERO else '0';
 	
 	-- when do we sample?
 	process(i_clk) begin
@@ -102,10 +122,10 @@ begin
 
 			-- counter for uart period
 			if idle = '1' then
-				cnt_period <= i_num_clks;
+				cnt_period <= unsigned(i_num_clks);
 			else
 				if cnt_period_tc then
-					cnt_period <= i_num_clks;
+					cnt_period <= unsigned(i_num_clks);
 				else
 					cnt_period <= cnt_period - 1;
 				end if;
@@ -121,12 +141,12 @@ begin
 			-- keep count of bits shifted in
 			if idle = '1' then
 				cnt_bits <= (others => '0');
-			if cnt_period_tc = '1' then
-				if cnt_bits /= CNT_BITS_MAX; then	
+				last_bit <= '0';
+			elsif cnt_period_tc = '1' then
+				if cnt_bits /= CNT_BITS_MAX then	
 					cnt_bits <= cnt_bits + 1;
 				else
-					
-			
+					last_bit <= '1';
 				end if;
 			end if;
 
