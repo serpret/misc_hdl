@@ -112,7 +112,7 @@ begin
 	-- bit:   0   |  1  | 2       |  8  |  9  
 
 
-	sample_time <= unsigned( '0' & i_num_clks( i_num_clks'length-2 downto 1) ) ;
+	sample_time <= unsigned( '0' & i_num_clks( i_num_clks'length-1 downto 1) ) ;
 		
 	cnt_period_tc <= '1' when cnt_period = CNT_PERIOD_ZERO else '0';
 	

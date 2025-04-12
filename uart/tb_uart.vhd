@@ -3,11 +3,11 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity tb is end tb;
+entity tb_uart is end tb_uart;
 
 
 
-architecture arch of tb is
+architecture arch of tb_uart is
 
 	signal i_tx_clk     : std_logic := '0';
 	signal i_tx_rst     : std_logic;
@@ -37,7 +37,7 @@ architecture arch of tb is
 			o_rdy:out std_logic;
 			i_dat: in std_logic_vector; --data to transmit, typically 8 width, set to 9 if you want to tx parity
 	
-			o_tx : in std_logic;
+			o_tx : out std_logic;
 			i_num_clks: in std_logic_vector --number of clocks, "i_clk", per baud period
 		);
 	end component;
@@ -156,3 +156,4 @@ begin
 
 
 end arch;
+
