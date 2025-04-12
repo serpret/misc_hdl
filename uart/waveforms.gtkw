@@ -1,0 +1,55 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Sat Apr 12 16:47:11 2025
+[*]
+[dumpfile] "/home/sergy/prj/misc/git/uart/tb_uart.vcd"
+[dumpfile_mtime] "Sat Apr 12 16:44:57 2025"
+[dumpfile_size] 46562
+[savefile] "/home/sergy/prj/misc/git/uart/waveforms.gtkw"
+[timestart] 0
+[size] 2190 1425
+[pos] -27 -24
+*-29.000000 1642000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb_uart.
+[sst_width] 278
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 444
+@28
+tb_uart.i_tx_clk
+tb_uart.i_tx_rst
+tb_uart.i_tx_val
+tb_uart.o_tx_rdy
+@22
+tb_uart.i_tx_dat[3:0]
+@200
+-
+@22
+tb_uart.uut_tx.cnt_bits[3:0]
+@28
+tb_uart.uut_tx.last_bit
+tb_uart.uut_tx.last_bit_done
+tb_uart.uut_tx.sr[5:0]
+@200
+-
+-
+@28
+tb_uart.txrx
+@200
+-
+-
+@28
+tb_uart.i_rx_clk
+tb_uart.i_rx_rst
+tb_uart.o_rx_val
+@22
+tb_uart.o_rx_dat[3:0]
+tb_uart.uut_rx.cnt_bits[3:0]
+@28
+tb_uart.uut_rx.last_bit
+tb_uart.uut_rx.sample_now
+tb_uart.txrx
+@29
+tb_uart.uut_rx.sr[5:0]
+[pattern_trace] 1
+[pattern_trace] 0

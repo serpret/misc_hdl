@@ -108,6 +108,10 @@ begin
 		end procedure;
 
 	begin
+		-- setup baud rate period of 5*7*4 = 140ns
+		i_tx_num_clks <=  6d"20"; --5*4
+		i_rx_num_clks <=  6d"28"; --7*4
+
 		-- reset tx and rx
 		i_tx_rst <= '1';
 		i_rx_rst <= '1';
@@ -120,9 +124,9 @@ begin
 		wait_clks(i_rx_clk, 1);
 		i_rx_rst <= '0';
 
-		-- setup baud rate period of 5*7*4 = 140ns
-		i_tx_num_clks <=  6d"20"; --5*4
-		i_rx_num_clks <=  6d"28"; --7*4
+		-- wait for initial stop period
+		wait_clks(i_tx_clk, 24);
+
 
 		--send data
 		wait_clks(i_tx_clk, 2);
@@ -147,10 +151,7 @@ begin
 		wait_clks(i_tx_clk, 200);
 		assert tb_rx_dat = 4x"3" report "failure: UUT_RX failed to receive data" severity error;
 		
-	
-		wait;	
-
-
+		report "Simulation finished" severity failure;
 
 	end process;
 

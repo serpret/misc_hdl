@@ -43,7 +43,7 @@ begin
 	process(i_clk) begin
 		if rising_edge(i_clk) then
 			if i_rst = '1' then
-				state <= ST_IDLE;			
+				state <= ST_ACTIVE;			
 			else
 				state <= nxt_state;
 			end if;
@@ -92,7 +92,7 @@ begin
 	-- ----------------------------
 	process(i_clk) begin
 		if rising_edge(i_clk) then
-			if o_rdy = '1' then
+			if o_rdy = '1' or i_rst = '1' then
 				cnt_period <= unsigned(i_num_clks);
 			else
 				if cnt_period_tc then
@@ -117,13 +117,20 @@ begin
 	-- ----------------------------
 	process(i_clk) begin
 		if rising_edge(i_clk) then
-			if i_val = '1' and o_rdy = '1' then
-				sr <= '0' & i_dat & '1' ;
+			if i_rst = '1' then
+				sr <= (others => '1');
+				cnt_bits <= CNT_BITS_MAX;
+				last_bit <= '1';
+				
+			elsif i_val = '1' and o_rdy = '1' then
+				--sr <= '0' & i_dat & '1' ;
+				sr <= '1' & i_dat & '0';
 				cnt_bits <= (others => '0');
 				last_bit <= '0';
 				last_bit_done <= '0';
 			elsif cnt_period_tc = '1' then
-				sr <= sr( sr'length-2 downto 0) & '1';
+				--sr <= sr( sr'length-2 downto 0) & '1';
+				sr <= '1' & sr( sr'length-1 downto 1);
 				--if cnt_bit = (i_dat'length+1)
 				if cnt_bits = CNT_BITS_MAX then
 					last_bit <= '1';
@@ -138,7 +145,8 @@ begin
 		end if;
 	end process;
 
-	o_tx <= sr( sr'length-1);
+	--o_tx <= sr( sr'length-1);
+	o_tx <= sr( 0);
 
 end arch;			
 

@@ -39,7 +39,7 @@ architecture arch of uart_rx is
 	constant CNT_BITS_MAX: unsigned( cnt_bits'range) := to_unsigned( o_dat'length+1, cnt_bits'length);
 
 	--signal sr : std_logic_vector( 8 downto 0);
-	signal sr : std_logic_vector( o_dat'length downto 0); 
+	signal sr : std_logic_vector( o_dat'length+1 downto 0); 
 begin
 
 	
@@ -76,13 +76,14 @@ begin
 
 			when ST_DATA =>
 				if last_bit = '1' and cnt_period_tc = '1' then
-					nxt_state <= ST_STOP;
-				end if;
-
-			when ST_STOP =>
-				if cnt_period_tc = '1' then
+					--nxt_state <= ST_STOP;
 					nxt_state <= ST_IDLE;
 				end if;
+
+			--when ST_STOP =>
+			--	if cnt_period_tc = '1' then
+			--		nxt_state <= ST_IDLE;
+			--	end if;
 
 			when others =>			
 				nxt_state <= ST_IDLE;
@@ -157,11 +158,13 @@ begin
 
 			-- final output
 			if idle = '1' then
-				o_dat <= sr(sr'length-1 downto 1);
+				o_dat <= sr(sr'length-3 downto 0);
 			end if;
 
 		end if;
 	end process;
+
+	o_val <= idle;
 
 end arch;			
 
