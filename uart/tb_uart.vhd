@@ -107,6 +107,27 @@ begin
 			end loop;
 		end procedure;
 
+		procedure wait_hi(
+			signal clk: in std_logic;
+			signal sig: in std_logic
+		) is
+		begin
+			while sig /= '1' loop
+				wait_clks(clk, 1 );
+			end loop;
+		end procedure;
+
+
+		procedure wait_lo(
+			signal clk: in std_logic;
+			signal sig: in std_logic
+		) is
+		begin
+			while sig /= '0' loop
+				wait_clks(clk, 1 );
+			end loop;
+		end procedure;
+
 	begin
 		-- setup baud rate period of 5*7*4 = 140ns
 		i_tx_num_clks <=  6d"20"; --5*4
@@ -146,12 +167,30 @@ begin
 		i_tx_dat <= 4x"3";
 		i_tx_val <= '1';
 		wait_clks(i_tx_clk,1);
-		--i_tx_val <= '0';
+		i_tx_val <= '0';
 
 		wait_clks(i_tx_clk, 200);
 		assert tb_rx_dat = 4x"3" report "failure: UUT_RX failed to receive data" severity error;
+
+		-- hold valid high, mmake sure tx works as expected
+		wait_clks(i_tx_clk, 100);
+	 	i_tx_dat <= 4x"0";	
+		i_tx_val <= '1';
+		wait_lo( i_tx_clk, o_tx_rdy);
+		i_tx_dat <= 4x"1";
+		wait_hi( i_tx_clk, o_tx_rdy);
+		wait_lo( i_tx_clk, o_tx_rdy);
+		i_tx_dat <= 4x"2";
+		i_tx_val <= '0';
+
+		wait_clks(i_tx_clk, 200);
+		--wait_hi( i_rx_clk, o_rx_val);
+		--assert o_rx_dat = 4x"0" report "failure: hold valid high fail1";
+		
+
 		
 		report "Simulation finished" severity failure;
+		--report "Simulation finished";
 
 	end process;
 

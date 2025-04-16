@@ -22,10 +22,12 @@ architecture arch of uart_rx is
 	signal sample_time : unsigned( i_num_clks'length-1 downto 0);
 	signal sample_now : std_logic;
 		
-	type t_state is (ST_IDLE,  ST_DATA, ST_STOP);
+	type t_state is (ST_IDLE,  ST_DATA, ST_STOP, ST_CAPT, ST_VALID);
 	signal     state: t_state;	
 	signal nxt_state: t_state;	
 	signal idle: std_logic;
+	signal capture: std_logic;
+	signal valid: std_logic;
 	
 	signal rx2: std_logic;
 	signal rx : std_logic;
@@ -36,7 +38,7 @@ architecture arch of uart_rx is
 	signal cnt_period_tc : std_logic;
 
 	signal cnt_bits : unsigned(3 downto 0);
-	constant CNT_BITS_MAX: unsigned( cnt_bits'range) := to_unsigned( o_dat'length+1, cnt_bits'length);
+	constant CNT_BITS_MAX: unsigned( cnt_bits'range) := to_unsigned( o_dat'length-1, cnt_bits'length);
 
 	--signal sr : std_logic_vector( 8 downto 0);
 	signal sr : std_logic_vector( o_dat'length+1 downto 0); 
@@ -77,13 +79,19 @@ begin
 			when ST_DATA =>
 				if last_bit = '1' and cnt_period_tc = '1' then
 					--nxt_state <= ST_STOP;
-					nxt_state <= ST_IDLE;
+					nxt_state <= ST_STOP;
 				end if;
 
-			--when ST_STOP =>
-			--	if cnt_period_tc = '1' then
-			--		nxt_state <= ST_IDLE;
-			--	end if;
+			when ST_STOP =>
+				if cnt_period_tc = '1' and rx = '1' then
+					nxt_state <= ST_CAPT;
+				end if;
+
+			when ST_CAPT =>
+				nxt_state <= ST_VALID;
+
+			when ST_VALID =>
+				nxt_state <= ST_IDLE;
 
 			when others =>			
 				nxt_state <= ST_IDLE;
@@ -97,11 +105,24 @@ begin
 		case( state) is
 			when ST_IDLE =>
 				idle <= '1';
+				valid <= '0';
+				capture <= '0';
 
 			--when ST_DATA => 
 			--when ST_STOP =>
+			when ST_CAPT =>
+				idle <= '0';
+				valid <= '0';
+				capture <= '1';
+
+			when ST_VALID =>
+				idle <= '0';
+				valid <= '1';
+				capture <= '0';
+
 			when others =>
 				idle <= '0';
+				valid <= '0';
 		end case;
 
 	end process;
@@ -157,14 +178,15 @@ begin
 			end if; 
 
 			-- final output
-			if idle = '1' then
-				o_dat <= sr(sr'length-3 downto 0);
+			if capture = '1' then
+				--o_dat <= sr(sr'length-3 downto 0);
+				o_dat <= sr(sr'length-2 downto 1);
 			end if;
 
 		end if;
 	end process;
 
-	o_val <= idle;
+	o_val <= valid;
 
 end arch;			
 

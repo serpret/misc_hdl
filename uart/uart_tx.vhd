@@ -31,7 +31,7 @@ architecture arch of uart_tx is
 	signal last_bit      : std_logic;  
 	signal last_bit_done : std_logic;
 
-	constant CNT_BITS_MAX: unsigned( cnt_bits'range) := to_unsigned( i_dat'length+1, cnt_bits'length);
+	constant CNT_BITS_MAX: unsigned( cnt_bits'range) := to_unsigned( i_dat'length, cnt_bits'length);
 	constant CNT_PERIOD_ZERO: unsigned( cnt_period'range) := (others => '0');
 
 	signal sr: std_logic_vector( i_dat'length+1 downto 0);
