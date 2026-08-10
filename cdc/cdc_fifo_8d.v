@@ -18,9 +18,13 @@
 
 // 8 deep asynchronous fifo
 // (actually its 8-1, 7 deep fifo, false advertising i guess)
+//
 // resets are synchronous, can can be tied 0.  
 // On FPGA power-up it should be empty, in all other cases either
-// use the reset or be ready to pop all fo the garbage data out of the fifo
+// use the resets or be ready to pop all fo the garbage data out of the fifo
+// 
+// resets should be held for at least 3 clock cycles on each clock domain
+
 
 module cdc_fifo_8d #(
 	parameter WIDTH = 32
@@ -64,8 +68,8 @@ module cdc_fifo_8d #(
 	wire [2:0] scd_m_idx;
 	
 	//clock domain crossing of indices 
-	cdc_2ff #(3) u_sync_idx_s2m (.r(m_rst),  .c(m_clk), .i( scd_idx), .o( mcd_s_idx));
-	cdc_2ff #(3) u_sync_idx_m2s (.r(s_rst),  .c(s_clk), .i( mcd_idx), .o( scd_m_idx));
+	cdc_2ff #(3) u_sync_idx_s2m ( .c(m_clk), .i( scd_idx), .o( mcd_s_idx));
+	cdc_2ff #(3) u_sync_idx_m2s ( .c(s_clk), .i( mcd_idx), .o( scd_m_idx));
 
 	//handle s side
 	assign s_rdy = graycode_next( scd_idx) != scd_m_idx;

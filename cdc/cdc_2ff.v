@@ -4,7 +4,6 @@ module cdc_2ff #(
 
 )(
 	input c,
-	input r,
 	input  [WIDTH-1:0] i,
 	output [WIDTH-1:0] o
 );
@@ -13,13 +12,8 @@ module cdc_2ff #(
 	(* ASYNC_REG = "TRUE" *) reg [WIDTH-1:0] ff2 = INIT_VALUE;
 
 	always @(posedge c) begin
-		if(r) begin 
-			ff1 <= INIT_VALUE;
-			ff2 <= INIT_VALUE;
-		end else begin
-			ff1 <= i;
-			ff2 <= ff1;
-		end
+		ff1 <= i;
+		ff2 <= ff1;
 	end
 	
 	assign o = ff2;
