@@ -61,8 +61,8 @@ module cdc_fifo_8d #(
 
 	// prefix explanation:
 	//      mcd_ -> m clock domain
-	reg [2:0] mcd_idx;
-	reg [2:0] scd_idx;
+	(* fsm_encoding = "gray" *) reg [2:0] mcd_idx;
+	(* fsm_encoding = "gray" *) reg [2:0] scd_idx;
 
 	wire [2:0] mcd_s_idx;
 	wire [2:0] scd_m_idx;
