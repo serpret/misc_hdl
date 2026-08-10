@@ -26,7 +26,7 @@ module cdc_fifo_8d #(
 	input              s_rst,
 	input              s_val,
 	output             s_rdy,
-	input  [WIDTH-1:0] s_dat
+	input  [WIDTH-1:0] s_dat,
 	input              m_clk,
 	input              m_rst,
 	output             m_val,
@@ -34,7 +34,7 @@ module cdc_fifo_8d #(
 	output [WIDTH-1:0] m_dat 
 );
 
-	function graycode_next
+	function [2:0] graycode_next;
 		input [2:0] current;
 		begin
 			case( current)
@@ -112,21 +112,23 @@ module cdc_fifo_8d #(
 
 
 	//now handle reads:
+	reg [WIDTH-1:0] m_dat_reg;
 	always @(*) begin
 		case( mcd_idx)
 
-			3'b000: m_dat <=  register[0] ; 
-			3'b001: m_dat <=  register[1] ;
-			3'b011: m_dat <=  register[3] ;
-			3'b010: m_dat <=  register[2] ;
-			3'b110: m_dat <=  register[6] ;
-			3'b111: m_dat <=  register[7] ;
-			3'b101: m_dat <=  register[5] ;
-			3'b100: m_dat <=  register[4] ;
+			3'b000: m_dat_reg <=  register[0] ; 
+			3'b001: m_dat_reg <=  register[1] ;
+			3'b011: m_dat_reg <=  register[3] ;
+			3'b010: m_dat_reg <=  register[2] ;
+			3'b110: m_dat_reg <=  register[6] ;
+			3'b111: m_dat_reg <=  register[7] ;
+			3'b101: m_dat_reg <=  register[5] ;
+			3'b100: m_dat_reg <=  register[4] ;
 
-			default: m_dat <= register[0] ;
+			default: m_dat_reg <= register[0] ;
 		endcase
 	end
+	assign m_dat = m_dat_reg;
 
 endmodule
 
