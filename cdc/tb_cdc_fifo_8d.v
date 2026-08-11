@@ -32,8 +32,8 @@ cdc_fifo_8d #(
 );
 
 
-always #5 s_clk = !s_clk;
-always #13 m_clk = !m_clk;
+always #13 s_clk = !s_clk;
+always #5 m_clk = !m_clk;
 
 task push( input [WIDTH-1:0] dat);
 begin

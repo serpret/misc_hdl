@@ -101,19 +101,7 @@ module cdc_fifo_8d #(
 	//first handle writes:
 	always @(posedge s_clk) begin
 		if (s_val & s_rdy) begin
-			case( scd_idx)
-
-				3'b000: register[0] <= s_dat; 
-				3'b001: register[1] <= s_dat;
-				3'b011: register[3] <= s_dat;
-				3'b010: register[2] <= s_dat;
-				3'b110: register[6] <= s_dat;
-				3'b111: register[7] <= s_dat;
-				3'b101: register[5] <= s_dat;
-				3'b100: register[4] <= s_dat;
-
-				//default: register[0]
-			endcase
+			register[scd_idx] <= s_dat;
 		end
 	end
 
@@ -121,19 +109,7 @@ module cdc_fifo_8d #(
 	//now handle reads:
 	reg [WIDTH-1:0] m_dat_reg;
 	always @(*) begin
-		case( mcd_idx)
-
-			3'b000: m_dat_reg <=  register[0] ; 
-			3'b001: m_dat_reg <=  register[1] ;
-			3'b011: m_dat_reg <=  register[3] ;
-			3'b010: m_dat_reg <=  register[2] ;
-			3'b110: m_dat_reg <=  register[6] ;
-			3'b111: m_dat_reg <=  register[7] ;
-			3'b101: m_dat_reg <=  register[5] ;
-			3'b100: m_dat_reg <=  register[4] ;
-
-			default: m_dat_reg <= register[0] ;
-		endcase
+		m_dat_reg = register[ mcd_idx];
 	end
 	assign m_dat = m_dat_reg;
 
